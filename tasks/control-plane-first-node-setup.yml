@@ -98,7 +98,7 @@
   set_fact:
     kubernetes_control_plane_certificate_key: "{{ kubeadm_upload_certs_output.stdout | regex_search('Using certificate key:\\s*\\n([a-f0-9]+)', '\\1') | first | default('') }}"
   when: kubernetes_control_plane_endpoint != ""
-  
+
 - name: Fail if certificate key not found
   fail:
     msg: "Certificate key not found in kubeadm output"
