@@ -31,37 +31,14 @@
     path: /etc/kubernetes/admin.conf
   register: kubernetes_init_stat
 
-# Set up control plane.
-- include_tasks: control-plane-setup.yml
+# Set up control plane first node.
+- include_tasks: control-plane-first-node-setup.yml
   when: kubernetes_role == 'control_plane'
+
+# Set up control plane additional nodes.
+- include_tasks: control-plane-additional-node-setup.yml
+  when: kubernetes_role == 'control_plane_additional'
 
 # Set up nodes.
-- name: Get the kubeadm join command from the Kubernetes control plane.
-  command: kubeadm token create --print-join-command
-  changed_when: false
-  when: kubernetes_role == 'control_plane'
-  register: kubernetes_join_command_result
-
-- name: Set the kubeadm join command globally.
-  set_fact:
-    kubernetes_join_command: >
-      {{ kubernetes_join_command_result.stdout }}
-      {{ kubernetes_join_command_extra_opts }}
-  when: (kubernetes_join_command_result.stdout is defined) and (kubernetes_ignore_preflight_errors is not defined)
-  delegate_to: "{{ item }}"
-  delegate_facts: true
-  with_items: "{{ groups['all'] }}"
-
-- name: Set the kubeadm join command with ignore preflight errors globally.
-  set_fact:
-    kubernetes_join_command: >
-      {{ kubernetes_join_command_result.stdout }}
-      --ignore-preflight-errors={{ kubernetes_ignore_preflight_errors }}
-      {{ kubernetes_join_command_extra_opts }}
-  when: (kubernetes_join_command_result.stdout is defined) and (kubernetes_ignore_preflight_errors is defined)
-  delegate_to: "{{ item }}"
-  delegate_facts: true
-  with_items: "{{ groups['all'] }}"
-
 - include_tasks: node-setup.yml
   when: kubernetes_role == 'node'
