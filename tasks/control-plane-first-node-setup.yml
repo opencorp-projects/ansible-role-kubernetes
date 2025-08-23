@@ -94,10 +94,14 @@
   register: kubeadm_upload_certs_output
   when: kubernetes_control_plane_endpoint != ""
 
+- name: Debug kubeadm upload certs output
+  debug:
+    var: kubeadm_upload_certs_output
+
 - name: Extract certificate key
   set_fact:
     kubernetes_control_plane_certificate_key: >
-      "{{ kubeadm_upload_certs_output.stdout | regex_search('Using certificate key:\\s*\\n([a-f0-9]+)', '\\1') | first | default('') }}"
+      "{{ kubeadm_upload_certs_output.stdout_lines[2] | default('') }}"
   when: kubernetes_control_plane_endpoint != ""
 
 - name: Fail if certificate key not found
