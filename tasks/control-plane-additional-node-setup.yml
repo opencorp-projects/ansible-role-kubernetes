@@ -1,4 +1,9 @@
 ---
+- name: Fail if kubernetes_control_plane_join_command not defined
+  fail:
+    msg: "kubernetes_control_plane_join_command is not defined"
+  when: kubernetes_control_plane_join_command is not defined
+
 - name: Join node to Kubernetes control plane.
   shell: >
     {{ kubernetes_control_plane_join_command }}
